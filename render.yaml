@@ -6,8 +6,9 @@ services:
     branch: main
     buildCommand: ""
     startCommand: gunicorn factory_bot:app
-    envVars:
-      - key: TOKEN
-        value: 8082800515:AAFaXFtLebT1JjFy8p1JAllFWjCX3L9YTYY
-      - key: OWNER_ID
-        value: "6664941582"
+envVars:
+  - key: TOKEN
+    value: "8082800515:AAFaXFtLebT1JjFy8p1JAllFWjCX3L9YTYY"
+  - key: OWNER_ID
+    value: "6664941582"
+
