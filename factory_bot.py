@@ -6,7 +6,13 @@ import datetime
 from openpyxl import Workbook, load_workbook
 
 TOKEN = os.environ.get("TOKEN")
-OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
+if not TOKEN:
+    raise ValueError("Ошибка: переменная окружения TOKEN не установлена!")
+
+owner_id_str = os.environ.get("OWNER_ID")
+if not owner_id_str:
+    raise ValueError("Ошибка: переменная окружения OWNER_ID не установлена!")
+OWNER_ID = int(owner_id_str)
 
 bot = telebot.TeleBot(TOKEN)
 STATE = {}
