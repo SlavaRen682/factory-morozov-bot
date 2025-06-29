@@ -5,17 +5,15 @@ import flask
 import datetime
 from openpyxl import Workbook, load_workbook
 
-TOKEN = "8082800515:AAFaXFtLebT1JjFy8p1JAllFWjCX3L9YTYY"
-OWNER_ID = 6664941582  # Telegram ID владельца (@xatyba)
+TOKEN = os.environ.get("TOKEN")
+OWNER_ID = int(os.environ.get("OWNER_ID"))
 
 bot = telebot.TeleBot(TOKEN)
 STATE = {}
 DATA = {}
-PHOTO_LINK = {}  # {owner_message_id: client_chat_id}
-
+PHOTO_LINK = {}
 EXCEL_FILE = 'orders.xlsx'
 
-# ✅ Проверка и создание Excel
 def ensure_excel_file():
     if not os.path.exists(EXCEL_FILE):
         wb = Workbook()
@@ -23,7 +21,6 @@ def ensure_excel_file():
         ws.append(["Дата", "Имя", "Username", "Фото", "Реквизиты"])
         wb.save(EXCEL_FILE)
 
-# ✅ Сохранение заявки в Excel
 def save_to_excel(user, photo_path, requisites):
     ensure_excel_file()
     wb = load_workbook(EXCEL_FILE)
@@ -36,40 +33,28 @@ def save_to_excel(user, photo_path, requisites):
         requisites
     ])
     wb.save(EXCEL_FILE)
-    
-@bot.message_handler(commands=['contact'])
-def contact_command(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("📲 Перейти в Telegram", url="https://t.me/xatyba"))
-    bot.send_message(message.chat.id, "💬 Менеджер на связи по кнопке ниже:", reply_markup=markup)
-    
+
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup.add("Да", "Нет")
     bot.send_message(message.chat.id, "👋 Вас актуален пошив изделий на заказ?", reply_markup=markup)
     STATE[message.chat.id] = 'AWAIT_CONFIRM'
- 
-@bot.message_handler(commands=['excel'])
+
+@bot.message_handler(commands=['contact'])
+def contact_command(message):
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("📲 Перейти в Telegram", url="https://t.me/xatyba"))
+    bot.send_message(message.chat.id, "💬 Менеджер на связи по кнопке ниже:", reply_markup=markup)
+
+@bot.message_handler(commands=['excel', 'клиенты'])
 def send_excel_to_owner(message):
     if message.chat.id == OWNER_ID and os.path.exists(EXCEL_FILE):
         with open(EXCEL_FILE, 'rb') as f:
             bot.send_document(OWNER_ID, f, caption="📊 Актуальный Excel-файл с заявками")
     else:
         bot.send_message(message.chat.id, "Файл не найден или у вас нет прав.")
-   
-@bot.message_handler(func=lambda m: m.text == "📞 Связаться с менеджером")
-def contact_manager(message):
-    markup = types.InlineKeyboardMarkup()
-    btn = types.InlineKeyboardButton(text="📲 Перейти в Telegram", url="https://t.me/xatyba")
-    markup.add(btn)
 
-    bot.send_message(
-        message.chat.id,
-        "💬 Нажмите на кнопку ниже, чтобы связаться с менеджером:",
-        reply_markup=markup
-    )
-    
 @bot.message_handler(func=lambda m: STATE.get(m.chat.id) == 'AWAIT_CONFIRM')
 def confirm_interest(message):
     if message.text.lower() == "да":
@@ -94,10 +79,7 @@ def handle_photo(message):
     with open(photo_path, 'wb') as f:
         f.write(downloaded)
 
-    DATA[message.chat.id] = {
-        "photo_path": photo_path,
-        "user": user
-    }
+    DATA[message.chat.id] = {"photo_path": photo_path, "user": user}
     STATE[message.chat.id] = 'WAITING_OWNER_PRICE'
 
     bot.send_message(message.chat.id, "✅ Фото получено. Мы передали его на оценку, ожидайте ответ с примерной ценой.")
@@ -124,11 +106,9 @@ def handle_owner_reply(message):
         bot.send_message(OWNER_ID, "❌ Не удалось найти клиента по этому сообщению.")
         return
 
-    # Обычные кнопки (reply) — Устраивает / Не устраивает
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup.add("Устраивает", "Не устраивает")
 
-    # Сообщение с текстом и кнопками
     bot.send_message(
         client_id,
         f"💰 Примерная стоимость пошива: {message.text}\nЦена вас устраивает?",
@@ -136,20 +116,6 @@ def handle_owner_reply(message):
     )
     STATE[client_id] = 'AWAIT_PRICE_CONFIRM'
     del PHOTO_LINK[reply_id]
-    
-@bot.callback_query_handler(func=lambda call: call.data.startswith("price_"))
-def handle_price_buttons(call):
-    chat_id = call.message.chat.id
-
-    if call.data.startswith("price_yes"):
-        bot.send_message(chat_id, "📄 Пришлите, пожалуйста, реквизиты вашей компании для выставления счёта.")
-        STATE[chat_id] = 'AWAIT_REQUISITES'
-    elif call.data.startswith("price_no"):
-        bot.send_message(chat_id, "Спасибо! Если что — будем на связи.")
-        STATE.pop(chat_id, None)
-        DATA.pop(chat_id, None)
-
-    bot.answer_callback_query(call.id)      
 
 @bot.message_handler(func=lambda m: STATE.get(m.chat.id) == 'AWAIT_PRICE_CONFIRM')
 def price_confirm(message):
@@ -186,9 +152,7 @@ def handle_requisites(message):
     except Exception as e:
         print(f"❌ Ошибка отправки реквизитов владельцу: {e}")
 
-
     bot.send_message(message.chat.id, "✅ Спасибо! Мы скоро свяжемся с вами по Telegram.")
-
 
     inline = types.InlineKeyboardMarkup()
     inline.add(types.InlineKeyboardButton("📲 Связаться с менеджером", url="https://t.me/xatyba"))
@@ -197,26 +161,14 @@ def handle_requisites(message):
     STATE.pop(message.chat.id, None)
     DATA.pop(message.chat.id, None)
 
-@bot.message_handler(commands=['клиенты'])
-def send_excel_to_owner(message):
-    if message.chat.id != OWNER_ID:
-        return
-
-    ensure_excel_file()
-
-    with open(EXCEL_FILE, 'rb') as f:
-        bot.send_document(OWNER_ID, f, caption="📊 Список клиентов с фото и реквизитами.")
-
-WEBHOOK_URL = "https://factory-morozov-bot.onrender.com"
-WEBHOOK_PATH = "/"
-
+# === Flask + Webhook ===
 app = flask.Flask(__name__)
 
-# Удалим старый webhook и установим новый
-bot.remove_webhook()
-bot.set_webhook(url=WEBHOOK_URL + WEBHOOK_PATH)
+@app.route("/", methods=["GET"])
+def index():
+    return "Factory Morozov bot is running!", 200
 
-@app.route(WEBHOOK_PATH, methods=["POST"])
+@app.route("/", methods=["POST"])
 def webhook():
     if flask.request.headers.get("content-type") == "application/json":
         json_string = flask.request.get_data().decode("utf-8")
@@ -225,6 +177,9 @@ def webhook():
         return "ok", 200
     else:
         return "Unsupported Media Type", 415
+
+bot.remove_webhook()
+bot.set_webhook(url="https://factory-morozov-bot.onrender.com/")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
