@@ -6,7 +6,7 @@ import datetime
 from openpyxl import Workbook, load_workbook
 
 TOKEN = os.environ.get("TOKEN")
-OWNER_ID = int(os.environ.get("OWNER_ID"))
+OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
 
 bot = telebot.TeleBot(TOKEN)
 STATE = {}
