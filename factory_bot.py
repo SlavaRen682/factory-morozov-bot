@@ -187,7 +187,7 @@ def webhook():
 
 
 bot.remove_webhook()
-bot.set_webhook(url="https://factory-morozov-bot.onrender.com/")
+bot.set_webhook(url="https://factory-morozov-bot.onrender.com")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
