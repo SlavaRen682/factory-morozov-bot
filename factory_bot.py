@@ -1,6 +1,7 @@
 import telebot
 from telebot import types
 import os
+import flask
 import datetime
 from openpyxl import Workbook, load_workbook
 
@@ -206,9 +207,7 @@ def send_excel_to_owner(message):
     with open(EXCEL_FILE, 'rb') as f:
         bot.send_document(OWNER_ID, f, caption="📊 Список клиентов с фото и реквизитами.")
 
-import flask
-
-WEBHOOK_URL = "https://factory-morozov-bot.onrender.com/"
+WEBHOOK_URL = "https://factory-morozov-bot.onrender.com"
 WEBHOOK_PATH = "/"
 
 app = flask.Flask(__name__)
