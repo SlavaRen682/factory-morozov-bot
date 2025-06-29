@@ -5,7 +5,7 @@ services:
     repo: https://github.com/SlavaRen682/factory-morozov-bot
     branch: main
     buildCommand: ""
-    startCommand: gunicorn factory_bot:app
+    startCommand: gunicorn factory_bot:app --workers 1
     envVars:
       - key: TOKEN
         value: "8082800515:AAFaXFtLebT1JjFy8p1JAllFWjCX3L9YTYY"
