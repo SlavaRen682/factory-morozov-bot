@@ -42,6 +42,7 @@ def save_to_excel(user, photo_path, requisites):
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    print(f"[LOG] /start получен от {message.chat.id}")
     bot.send_message(message.chat.id, "Привет! Бот работает.")
 
 
