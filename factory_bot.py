@@ -42,10 +42,8 @@ def save_to_excel(user, photo_path, requisites):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    markup.add("Да", "Нет")
-    bot.send_message(message.chat.id, "👋 Вас актуален пошив изделий на заказ?", reply_markup=markup)
-    STATE[message.chat.id] = 'AWAIT_CONFIRM'
+    bot.send_message(message.chat.id, "Привет! Бот работает.")
+
 
 @bot.message_handler(commands=['contact'])
 def contact_command(message):
