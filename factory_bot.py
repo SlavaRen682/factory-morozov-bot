@@ -206,5 +206,26 @@ def send_excel_to_owner(message):
     with open(EXCEL_FILE, 'rb') as f:
         bot.send_document(OWNER_ID, f, caption="📊 Список клиентов с фото и реквизитами.")
 
+import flask
+
+WEBHOOK_URL = "https://factory-morozov-bot.onrender.com/"
+WEBHOOK_PATH = "/"
+
+app = flask.Flask(__name__)
+
+# Удалим старый webhook и установим новый
+bot.remove_webhook()
+bot.set_webhook(url=WEBHOOK_URL + WEBHOOK_PATH)
+
+@app.route(WEBHOOK_PATH, methods=["POST"])
+def webhook():
+    if flask.request.headers.get("content-type") == "application/json":
+        json_string = flask.request.get_data().decode("utf-8")
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return "ok", 200
+    else:
+        return "Unsupported Media Type", 415
+
 if __name__ == "__main__":
-    bot.infinity_polling()
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
