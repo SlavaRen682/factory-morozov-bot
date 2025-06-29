@@ -48,7 +48,15 @@ def start(message):
     markup.add("Да", "Нет")
     bot.send_message(message.chat.id, "👋 Вас актуален пошив изделий на заказ?", reply_markup=markup)
     STATE[message.chat.id] = 'AWAIT_CONFIRM'
-    
+ 
+@bot.message_handler(commands=['excel'])
+def send_excel_to_owner(message):
+    if message.chat.id == OWNER_ID and os.path.exists(EXCEL_FILE):
+        with open(EXCEL_FILE, 'rb') as f:
+            bot.send_document(OWNER_ID, f, caption="📊 Актуальный Excel-файл с заявками")
+    else:
+        bot.send_message(message.chat.id, "Файл не найден или у вас нет прав.")
+   
 @bot.message_handler(func=lambda m: m.text == "📞 Связаться с менеджером")
 def contact_manager(message):
     markup = types.InlineKeyboardMarkup()
