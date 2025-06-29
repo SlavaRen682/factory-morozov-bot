@@ -14,7 +14,7 @@ if not owner_id_str:
     raise ValueError("Ошибка: переменная окружения OWNER_ID не установлена!")
 OWNER_ID = int(owner_id_str)
 
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(TOKEN, threaded=False)
 STATE = {}
 DATA = {}
 PHOTO_LINK = {}
