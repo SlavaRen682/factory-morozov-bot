@@ -178,11 +178,14 @@ def index():
 def webhook():
     if flask.request.headers.get("content-type") == "application/json":
         json_string = flask.request.get_data().decode("utf-8")
+        print(f"Webhook received update: {json_string}")  # Добавлено логирование
         update = telebot.types.Update.de_json(json_string)
         bot.process_new_updates([update])
         return "ok", 200
     else:
+        print(f"Unsupported Media Type: {flask.request.headers.get('content-type')}")  # Лог если не json
         return "Unsupported Media Type", 415
+
 
 bot.remove_webhook()
 bot.set_webhook(url="https://factory-morozov-bot.onrender.com/")
