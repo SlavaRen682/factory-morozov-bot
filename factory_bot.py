@@ -42,7 +42,10 @@ def save_to_excel(user, photo_path, requisites):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    name = message.from_user.first_name or "друг"
+    user = message.from_user
+    name = user.first_name or "друг"
+    username = f"@{user.username}" if user.username else "Без username"
+    user_id = user.id
 
     welcome_text = (
         f"👋 Привет, <b>{name}</b>!\n\n"
@@ -65,6 +68,16 @@ def start(message):
     )
 
     STATE[message.chat.id] = 'AWAIT_CONFIRM'
+
+    # Уведомление владельцу
+    bot.send_message(
+        OWNER_ID,
+        f"📥 Новый пользователь зашёл в бота:\n"
+        f"👤 <b>{name}</b>\n"
+        f"🔗 {username}\n"
+        f"🆔 <code>{user_id}</code>",
+        parse_mode="HTML"
+    )
 
 
 @bot.message_handler(commands=['contact'])
