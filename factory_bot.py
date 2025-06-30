@@ -53,7 +53,7 @@ def start(message):
         f"Здесь вы сможете:\n"
         f"▫️ Отправить фото изделия\n"
         f"▫️ Получить примерную стоимость пошива\n"
-        f"<i>Актуален ли для вас индивидуальный пошив изделий?</i>"
+        f"<i>Актуален ли для вас пошив изделий?</i>"
     )
 
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
