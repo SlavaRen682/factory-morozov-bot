@@ -193,7 +193,7 @@ def handle_requisites(message):
     bot.send_message(message.chat.id, "✅ Спасибо! Мы скоро свяжемся с вами по Telegram.")
 
     inline = types.InlineKeyboardMarkup()
-    inline.add(types.InlineKeyboardButton("📲 Связаться с менеджером", url="https://t.me/xatyba"))
+    inline.add(types.InlineKeyboardButton("📲 Связаться с менеджером", url="https://t.me/PavelMorozovEkat"))
     bot.send_message(message.chat.id, "💬 Если хотите уточнить детали — нажмите кнопку ниже:", reply_markup=inline)
 
     STATE.pop(message.chat.id, None)
