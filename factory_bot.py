@@ -42,10 +42,30 @@ def save_to_excel(user, photo_path, requisites):
 
 @bot.message_handler(commands=['start'])
 def start(message):
+    name = message.from_user.first_name or "друг"
+
+    welcome_text = (
+        f"👋 Привет, <b>{name}</b>!\n\n"
+        f"Вы попали в официальный бот фабрики <b>Морозовых</b> 🧵\n"
+        f"Здесь вы сможете:\n"
+        f"▫️ Отправить фото изделия\n"
+        f"▫️ Получить примерную стоимость пошива\n"
+        f"▫️ Передать реквизиты для оформления\n\n"
+        f"<i>Актуален ли для вас индивидуальный пошив изделий?</i>"
+    )
+
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     markup.add("Да", "Нет")
-    bot.send_message(message.chat.id, "👋 Вас актуален пошив изделий на заказ?", reply_markup=markup)
+
+    bot.send_message(
+        message.chat.id,
+        welcome_text,
+        reply_markup=markup,
+        parse_mode='HTML'
+    )
+
     STATE[message.chat.id] = 'AWAIT_CONFIRM'
+
 
 @bot.message_handler(commands=['contact'])
 def contact_command(message):
