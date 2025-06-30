@@ -82,7 +82,7 @@ def start(message):
 @bot.message_handler(commands=['contact'])
 def contact_command(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("📲 Перейти в Telegram", url="https://t.me/xatyba"))
+    markup.add(types.InlineKeyboardButton("📲 Перейти в Telegram", url="https://t.me/PavelMorozovEkat"))
     bot.send_message(message.chat.id, "💬 Менеджер на связи по кнопке ниже:", reply_markup=markup)
 
 @bot.message_handler(commands=['excel', 'клиенты'])
