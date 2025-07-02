@@ -96,12 +96,51 @@ def send_excel_to_owner(message):
 @bot.message_handler(func=lambda m: STATE.get(m.chat.id) == 'AWAIT_CONFIRM')
 def confirm_interest(message):
     if message.text.lower() == "да":
-        bot.send_message(message.chat.id, "📸 Пришлите фото изделия, и мы передадим его на оценку.", reply_markup=types.ReplyKeyboardRemove())
-        STATE[message.chat.id] = 'AWAIT_PHOTO'
+        bot.send_message(
+            message.chat.id,
+            "✂️ Мы занимаемся только <b>оптовым пошивом</b>, поэтому единичные заказы не рассматриваем.\n\n"
+            "🔢 <b>Сколько изделий вы планируете отшить?</b>",
+            parse_mode="HTML"
+        )
+
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        markup.add("1–10", "10–50", "Более 50")
+        bot.send_message(message.chat.id, "Выберите подходящий вариант:", reply_markup=markup)
+
+        STATE[message.chat.id] = 'AWAIT_QUANTITY'
     else:
-        bot.send_message(message.chat.id, "Хорошо! Если заинтересует — возвращайтесь 🙂", reply_markup=types.ReplyKeyboardRemove())
+        bot.send_message(
+            message.chat.id,
+            "Хорошо! Если заинтересует — возвращайтесь 🙂",
+            reply_markup=types.ReplyKeyboardRemove()
+        )
         STATE.pop(message.chat.id, None)
 
+@bot.message_handler(func=lambda m: STATE.get(m.chat.id) == 'AWAIT_QUANTITY')
+def handle_quantity(message):
+    choice = message.text.strip()
+
+    if choice in ["1–10", "10–50"]:
+        bot.send_message(
+            message.chat.id,
+            "К сожалению, мы работаем только с оптовыми заказами от 50 изделий.\n"
+            "Если в будущем потребуется оптовый пошив — будем рады помочь!",
+            reply_markup=types.ReplyKeyboardRemove()
+        )
+        STATE.pop(message.chat.id, None)
+    elif choice == "Более 50":
+        bot.send_message(
+            message.chat.id,
+            "📸 Отлично! Пришлите фото изделия, и мы передадим его на оценку.",
+            reply_markup=types.ReplyKeyboardRemove()
+        )
+        STATE[message.chat.id] = 'AWAIT_PHOTO'
+    else:
+        bot.send_message(
+            message.chat.id,
+            "Пожалуйста, выберите один из предложенных вариантов.",
+        )
+        
 @bot.message_handler(content_types=['photo'])
 def handle_photo(message):
     if STATE.get(message.chat.id) != 'AWAIT_PHOTO':
@@ -157,13 +196,17 @@ def handle_owner_reply(message):
 
 @bot.message_handler(func=lambda m: STATE.get(m.chat.id) == 'AWAIT_PRICE_CONFIRM')
 def price_confirm(message):
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("📲 Связаться с менеджером", url="https://t.me/PavelMorozovEkat"))
+
     if message.text.lower() == "устраивает":
-        bot.send_message(message.chat.id, "📄 Пришлите, пожалуйста, реквизиты вашей компании для выставления счёта.", reply_markup=types.ReplyKeyboardRemove())
-        STATE[message.chat.id] = 'AWAIT_REQUISITES'
+        bot.send_message(message.chat.id, "✅ Отлично! Свяжитесь с менеджером по кнопке ниже:", reply_markup=markup)
     else:
-        bot.send_message(message.chat.id, "Спасибо за интерес! Если что — будем на связи.", reply_markup=types.ReplyKeyboardRemove())
-        STATE.pop(message.chat.id, None)
-        DATA.pop(message.chat.id, None)
+        bot.send_message(message.chat.id, "🤝 Понимаем! Свяжитесь с менеджером — возможно договоримся:", reply_markup=markup)
+
+    STATE.pop(message.chat.id, None)
+    DATA.pop(message.chat.id, None)
+
 
 @bot.message_handler(func=lambda m: STATE.get(m.chat.id) == 'AWAIT_REQUISITES')
 def handle_requisites(message):
